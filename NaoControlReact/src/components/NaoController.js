@@ -49,6 +49,30 @@ export const joystickToHead = (joyX, joyY) => ({
   pitch: joyY === 0 ? 0 : -joyY
 });
 
+/**
+ * Convierte la posicion del joystick a angulos de hombro del NAO.
+ *
+ * Joystick: joyX positivo = derecha en pantalla, joyY positivo = arriba.
+ * NAOqi ShoulderPitch: positivo = brazo ABAJO (rango -2.0857 a 2.0857 rad).
+ * NAOqi ShoulderRoll:  positivo = hacia la IZQUIERDA del robot.
+ *   LShoulderRoll va de -0.3142 a 1.3265 rad; RShoulderRoll de -1.3265 a 0.3142.
+ *
+ * Los dos ejes se invierten por los mismos motivos que en la cabeza: el roll
+ * comparte la convencion lateral de moveToward y el pitch crece hacia abajo,
+ * mientras que el joystick ya entrega su eje vertical creciendo hacia arriba.
+ *
+ * Ambos brazos usan el mismo mapeo. Los rangos de roll son espejo uno del otro,
+ * asi que un mismo valor mueve cada brazo hacia el mismo lado del robot.
+ *
+ * @param {number} joyX Eje horizontal del joystick, en [-1, 1].
+ * @param {number} joyY Eje vertical del joystick, en [-1, 1].
+ * @returns {{roll: number, pitch: number}} Angulos en el marco de NAOqi.
+ */
+export const joystickToArm = (joyX, joyY) => ({
+  roll: joyX === 0 ? 0 : -joyX,
+  pitch: joyY === 0 ? 0 : -joyY
+});
+
 const NaoController = () => {
   const [currentMode, setCurrentMode] = useState('walk');
   const [activeMenu, setActiveMenu] = useState(null);
@@ -134,14 +158,19 @@ const NaoController = () => {
         // joystickToWalk traduce del marco del joystick al de NAOqi
         sendMessage({ action: 'walk', ...joystickToWalk(vx, vy) });
         break;
-      case 'larm':
-        sendMessage({ action: 'move', joint: 'LShoulderPitch', value: vy });
-        sendMessage({ action: 'move', joint: 'LShoulderRoll', value: vx });
+      case 'larm': {
+        // joystickToArm invierte los dos ejes, igual que en la cabeza
+        const { roll, pitch } = joystickToArm(vx, vy);
+        sendMessage({ action: 'move', joint: 'LShoulderPitch', value: pitch });
+        sendMessage({ action: 'move', joint: 'LShoulderRoll', value: roll });
         break;
-      case 'rarm':
-        sendMessage({ action: 'move', joint: 'RShoulderPitch', value: vy });
-        sendMessage({ action: 'move', joint: 'RShoulderRoll', value: vx });
+      }
+      case 'rarm': {
+        const { roll, pitch } = joystickToArm(vx, vy);
+        sendMessage({ action: 'move', joint: 'RShoulderPitch', value: pitch });
+        sendMessage({ action: 'move', joint: 'RShoulderRoll', value: roll });
         break;
+      }
       case 'head': {
         // joystickToHead invierte los dos ejes: yaw y pitch crecen al reves
         const { yaw, pitch } = joystickToHead(vx, vy);

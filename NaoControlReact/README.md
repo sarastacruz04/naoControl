@@ -1320,18 +1320,23 @@ const stopSend = useCallback(() => {
 **Función**: Control del brazo izquierdo del robot
 
 #### 📋 Características
-- **Articulaciones controladas**:
-  - X del joystick → `LShoulderRoll` (rotación lateral)
-  - Y del joystick → `LShoulderPitch` (elevación)
+- **Articulaciones controladas** (vía `joystickToArm`):
+  - X del joystick → `LShoulderRoll` (rotación lateral), **con el signo invertido**
+  - Y del joystick → `LShoulderPitch` (elevación), **con el signo invertido**
+- **Convenciones NAOqi**: `ShoulderPitch` positivo = brazo abajo (rango -2.0857 a
+  2.0857 rad); `ShoulderRoll` positivo = hacia la izquierda del robot
+  (`LShoulderRoll` de -0.3142 a 1.3265 rad).
 - **Hold Position**: Al soltar, mantiene la posición actual
-- **Rango angular**: Aproximadamente [-2.0, 2.0] radianes
 
 #### 🔧 Implementación
 ```javascript
-case 'larm':
-  sendMessage({ action: 'move', joint: 'LShoulderPitch', value: vy });
-  sendMessage({ action: 'move', joint: 'LShoulderRoll', value: vx });
+case 'larm': {
+  // joystickToArm invierte los dos ejes, igual que en la cabeza
+  const { roll, pitch } = joystickToArm(vx, vy);
+  sendMessage({ action: 'move', joint: 'LShoulderPitch', value: pitch });
+  sendMessage({ action: 'move', joint: 'LShoulderRoll', value: roll });
   break;
+}
 ```
 
 ### 🦾 Modo Right Arm (Brazo Derecho)
@@ -1339,18 +1344,21 @@ case 'larm':
 **Función**: Control del brazo derecho del robot
 
 #### 📋 Características
-- **Articulaciones controladas**:
-  - X del joystick → `RShoulderRoll` (rotación lateral)
-  - Y del joystick → `RShoulderPitch` (elevación)
+- **Articulaciones controladas** (vía `joystickToArm`):
+  - X del joystick → `RShoulderRoll` (rotación lateral), **con el signo invertido**
+  - Y del joystick → `RShoulderPitch` (elevación), **con el signo invertido**
+- **Simetría**: `RShoulderRoll` va de -1.3265 a 0.3142 rad, espejo del izquierdo, de
+  modo que un mismo valor mueve ambos brazos hacia el mismo lado del robot.
 - **Hold Position**: Al soltar, mantiene la posición actual
-- **Simetría**: Comportamiento espejo del brazo izquierdo
 
 #### 🔧 Implementación
 ```javascript
-case 'rarm':
-  sendMessage({ action: 'move', joint: 'RShoulderPitch', value: vy });
-  sendMessage({ action: 'move', joint: 'RShoulderRoll', value: vx });
+case 'rarm': {
+  const { roll, pitch } = joystickToArm(vx, vy);
+  sendMessage({ action: 'move', joint: 'RShoulderPitch', value: pitch });
+  sendMessage({ action: 'move', joint: 'RShoulderRoll', value: roll });
   break;
+}
 ```
 
 ### 🗣️ Modo Head (Cabeza)

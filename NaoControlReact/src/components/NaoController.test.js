@@ -1,4 +1,4 @@
-import { joystickToHead, joystickToWalk } from './NaoController';
+import { joystickToArm, joystickToHead, joystickToWalk } from './NaoController';
 
 /**
  * Marco de NAOqi para ALMotion.moveToward(x, y, theta):
@@ -95,4 +95,54 @@ test('el joystick centrado deja la cabeza quieta', () => {
 test('la cabeza y la caminata comparten el mismo sentido lateral', () => {
   // Un gesto a la derecha manda el robot y su mirada al mismo lado.
   expect(Math.sign(joystickToHead(1, 0).yaw)).toBe(Math.sign(joystickToWalk(1, 0).vy));
+});
+
+/**
+ * Brazos. Ambos hombros comparten mapeo:
+ *   ShoulderPitch > 0  ->  brazo ABAJO   (rango -2.0857 a 2.0857 rad)
+ *   ShoulderRoll  > 0  ->  hacia la IZQUIERDA del robot
+ * LShoulderRoll va de -0.3142 a 1.3265 rad y RShoulderRoll de -1.3265 a 0.3142:
+ * son espejo, de modo que un mismo valor mueve cada brazo al mismo lado.
+ */
+
+test('el joystick a la derecha mueve el brazo hacia la derecha del robot', () => {
+  // ShoulderRoll negativo apunta a la derecha del robot.
+  expect(joystickToArm(1, 0).roll).toBeLessThan(0);
+});
+
+test('el joystick a la izquierda mueve el brazo hacia la izquierda del robot', () => {
+  expect(joystickToArm(-1, 0).roll).toBeGreaterThan(0);
+});
+
+test('el joystick hacia arriba levanta el brazo', () => {
+  // ShoulderPitch negativo levanta el brazo.
+  expect(joystickToArm(0, 1).pitch).toBeLessThan(0);
+});
+
+test('el joystick hacia abajo baja el brazo', () => {
+  expect(joystickToArm(0, -1).pitch).toBeGreaterThan(0);
+});
+
+test('en los brazos cada eje del joystick mueve una sola articulacion', () => {
+  expect(joystickToArm(1, 0).pitch).toBe(0);
+  expect(joystickToArm(0, 1).roll).toBe(0);
+});
+
+test('el joystick centrado deja los brazos quietos', () => {
+  expect(joystickToArm(0, 0)).toEqual({ roll: 0, pitch: 0 });
+});
+
+test('los tres modos comparten el mismo sentido lateral', () => {
+  // Un gesto a la derecha manda cuerpo, mirada y brazos al mismo lado.
+  const lateral = [
+    joystickToWalk(1, 0).vy,
+    joystickToHead(1, 0).yaw,
+    joystickToArm(1, 0).roll
+  ];
+
+  expect(lateral.every((axis) => Math.sign(axis) === -1)).toBe(true);
+});
+
+test('la cabeza y los brazos comparten el mismo sentido vertical', () => {
+  expect(Math.sign(joystickToArm(0, 1).pitch)).toBe(Math.sign(joystickToHead(0, 1).pitch));
 });
