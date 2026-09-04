@@ -1274,17 +1274,19 @@ stateDiagram-v2
 **Función**: Control de movimiento locomotor del robot
 
 #### 📋 Características
-- **Mapeo de ejes**:
-  - X del joystick → Velocidad lateral (vy en NAO)
-  - Y del joystick → Velocidad adelante/atrás (vx en NAO)
+- **Mapeo de ejes** (vía `joystickToWalk`):
+  - X del joystick → Velocidad lateral (`vy` en NAO), **con el signo invertido**
+  - Y del joystick → Velocidad adelante/atrás (`vx` en NAO), sin invertir
+- **Marcos de referencia**: el joystick usa X+ = derecha; NAOqi `moveToward` usa
+  Y+ = izquierda. El eje lateral se invierte para traducir entre ambos.
 - **Auto-Stop**: Al soltar el joystick, envía comando de parada y postura Stand
 - **Rango de velocidad**: [-1.0, 1.0] m/s aproximadamente
 
 #### 🔧 Implementación
 ```javascript
 case 'walk':
-  // Para walk: adelante = vy local; lateral = vx local
-  sendMessage({ action: 'walk', vx: vy, vy: vx, wz: 0 });
+  // joystickToWalk traduce del marco del joystick al de NAOqi
+  sendMessage({ action: 'walk', ...joystickToWalk(vx, vy) });
   break;
 ```
 
@@ -1356,18 +1358,24 @@ case 'rarm':
 **Función**: Control de la cabeza del robot
 
 #### 📋 Características
-- **Articulaciones controladas**:
-  - X del joystick → `HeadYaw` (rotación horizontal)
-  - Y del joystick → `HeadPitch` (inclinación vertical)
+- **Articulaciones controladas** (vía `joystickToHead`):
+  - X del joystick → `HeadYaw` (rotación horizontal), **con el signo invertido**
+  - Y del joystick → `HeadPitch` (inclinación vertical), **con el signo invertido**
+- **Convenciones NAOqi**: `HeadYaw` positivo = izquierda (rango -2.0857 a 2.0857 rad);
+  `HeadPitch` positivo = abajo (rango -0.6720 a 0.5149 rad). Los dos ejes se
+  invierten respecto del joystick, cada uno por su propio motivo.
 - **Hold Position**: Al soltar, mantiene la posición actual
 - **Seguimiento suave**: Movimientos precisos para seguimiento de objetivos
 
 #### 🔧 Implementación
 ```javascript
-case 'head':
-  sendMessage({ action: 'move', joint: 'HeadPitch', value: vy });
-  sendMessage({ action: 'move', joint: 'HeadYaw', value: vx });
+case 'head': {
+  // joystickToHead invierte los dos ejes: yaw y pitch crecen al revés
+  const { yaw, pitch } = joystickToHead(vx, vy);
+  sendMessage({ action: 'move', joint: 'HeadPitch', value: pitch });
+  sendMessage({ action: 'move', joint: 'HeadYaw', value: yaw });
   break;
+}
 ```
 
 ### 🔄 Cambio de Modos

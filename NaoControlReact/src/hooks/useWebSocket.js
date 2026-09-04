@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { naoHost } from '../services/naoHost';
 
 const useWebSocket = (port = 6671) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -7,7 +8,7 @@ const useWebSocket = (port = 6671) => {
   const reconnectTimeoutRef = useRef(null);
 
   const connect = useCallback(() => {
-    const host = window.location.hostname;
+    const host = naoHost();
     const url = `ws://${host}:${port}`;
     
     console.log("[WS] Intentando conexión a", url);

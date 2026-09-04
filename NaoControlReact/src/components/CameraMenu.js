@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { naoHost } from '../services/naoHost';
 import './CameraMenu.css';
 
 const CameraMenu = ({ isOpen, onClose, cameraUrl, isEmbedded = false }) => {
@@ -10,7 +11,7 @@ const CameraMenu = ({ isOpen, onClose, cameraUrl, isEmbedded = false }) => {
       setCurrentCameraUrl(cameraUrl);
     } else {
       // Detectar la IP actual y construir la URL de la cámara
-      const currentHost = window.location.hostname;
+      const currentHost = naoHost();
       const autoDetectedUrl = `http://${currentHost}:8080/video.mjpeg`;
       setCurrentCameraUrl(autoDetectedUrl);
     }

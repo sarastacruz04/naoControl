@@ -1,12 +1,53 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaCircle, FaBatteryFull, FaBatteryHalf, FaBatteryQuarter, FaBatteryEmpty, FaFutbol, FaGrinStars } from 'react-icons/fa';
 import useWebSocket from '../hooks/useWebSocket';
+import { naoHost } from '../services/naoHost';
 import ModePanel from './ModePanel';
 import ControlButtons from './ControlButtons';
 import Joystick from './Joystick';
 import SidePanel from './SidePanel';
 import OrientationMessage from './OrientationMessage';
 import './NaoController.css';
+
+/**
+ * Convierte la posicion del joystick al marco de referencia de NAOqi.
+ *
+ * Joystick: joyX positivo = derecha en pantalla, joyY positivo = arriba (adelante).
+ * NAOqi moveToward(x, y, theta): x positivo = adelante, y positivo = IZQUIERDA.
+ *
+ * El eje lateral se invierte porque los dos marcos son opuestos. Sin el signo
+ * negativo el robot camina hacia el lado contrario al que pide el joystick.
+ *
+ * @param {number} joyX Eje horizontal del joystick, en [-1, 1].
+ * @param {number} joyY Eje vertical del joystick, en [-1, 1].
+ * @returns {{vx: number, vy: number, wz: number}} Velocidades en el marco de NAOqi.
+ */
+export const joystickToWalk = (joyX, joyY) => ({
+  vx: joyY,
+  // El ternario evita devolver -0 cuando joyX es 0.
+  vy: joyX === 0 ? 0 : -joyX,
+  wz: 0
+});
+
+/**
+ * Convierte la posicion del joystick a angulos de la cabeza del NAO.
+ *
+ * Joystick: joyX positivo = derecha en pantalla, joyY positivo = arriba.
+ * NAOqi HeadYaw:   positivo = IZQUIERDA (rango -2.0857 a 2.0857 rad).
+ * NAOqi HeadPitch: positivo = ABAJO      (rango -0.6720 a 0.5149 rad).
+ *
+ * Los dos ejes se invierten, cada uno por su propio motivo. El yaw comparte la
+ * convencion lateral de moveToward. El pitch crece hacia abajo, mientras que el
+ * joystick ya entrega su eje vertical creciendo hacia arriba.
+ *
+ * @param {number} joyX Eje horizontal del joystick, en [-1, 1].
+ * @param {number} joyY Eje vertical del joystick, en [-1, 1].
+ * @returns {{yaw: number, pitch: number}} Angulos en el marco de NAOqi.
+ */
+export const joystickToHead = (joyX, joyY) => ({
+  yaw: joyX === 0 ? 0 : -joyX,
+  pitch: joyY === 0 ? 0 : -joyY
+});
 
 const NaoController = () => {
   const [currentMode, setCurrentMode] = useState('walk');
@@ -28,8 +69,7 @@ const NaoController = () => {
 
   // Detectar IP del host
   useEffect(() => {
-    const currentHost = window.location.hostname;
-    setHostIP(currentHost);
+    setHostIP(naoHost());
   }, []);
 
   // Manejar mensajes entrantes
@@ -91,8 +131,8 @@ const NaoController = () => {
 
     switch (mode) {
       case 'walk':
-        // Para walk: adelante = vy local; lateral = vx local
-        sendMessage({ action: 'walk', vx: vy, vy: vx, wz: 0 });
+        // joystickToWalk traduce del marco del joystick al de NAOqi
+        sendMessage({ action: 'walk', ...joystickToWalk(vx, vy) });
         break;
       case 'larm':
         sendMessage({ action: 'move', joint: 'LShoulderPitch', value: vy });
@@ -102,10 +142,13 @@ const NaoController = () => {
         sendMessage({ action: 'move', joint: 'RShoulderPitch', value: vy });
         sendMessage({ action: 'move', joint: 'RShoulderRoll', value: vx });
         break;
-      case 'head':
-        sendMessage({ action: 'move', joint: 'HeadPitch', value: vy });
-        sendMessage({ action: 'move', joint: 'HeadYaw', value: vx });
+      case 'head': {
+        // joystickToHead invierte los dos ejes: yaw y pitch crecen al reves
+        const { yaw, pitch } = joystickToHead(vx, vy);
+        sendMessage({ action: 'move', joint: 'HeadPitch', value: pitch });
+        sendMessage({ action: 'move', joint: 'HeadYaw', value: yaw });
         break;
+      }
       default:
         break;
     }
