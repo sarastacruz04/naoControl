@@ -1,4 +1,9 @@
-import { joystickToArm, joystickToHead, joystickToWalk } from './NaoController';
+import {
+  isAutonomousLifeActive,
+  joystickToArm,
+  joystickToHead,
+  joystickToWalk
+} from './NaoController';
 
 /**
  * Marco de NAOqi para ALMotion.moveToward(x, y, theta):
@@ -145,4 +150,51 @@ test('los tres modos comparten el mismo sentido lateral', () => {
 
 test('la cabeza y los brazos comparten el mismo sentido vertical', () => {
   expect(Math.sign(joystickToArm(0, 1).pitch)).toBe(Math.sign(joystickToHead(0, 1).pitch));
+});
+
+/**
+ * Vida autonoma. El robot no responde si o no: manda el nombre del modo en que
+ * esta ALAutonomousLife. Solo "disabled" significa apagada; "unknown" es la
+ * respuesta cuando el robot no pudo consultarlo y tampoco debe contar como
+ * encendida. La rama de error del control server envia un false real.
+ */
+
+test('el estado "disabled" apaga el boton', () => {
+  expect(isAutonomousLifeActive('disabled')).toBe(false);
+});
+
+test('el estado "unknown" no cuenta como encendida', () => {
+  expect(isAutonomousLifeActive('unknown')).toBe(false);
+});
+
+test('los modos activos encienden el boton', () => {
+  expect(isAutonomousLifeActive('interactive')).toBe(true);
+  expect(isAutonomousLifeActive('solitary')).toBe(true);
+  expect(isAutonomousLifeActive('safeguard')).toBe(true);
+});
+
+test('tambien se acepta un si/no directo del robot', () => {
+  expect(isAutonomousLifeActive(true)).toBe(true);
+  expect(isAutonomousLifeActive(false)).toBe(false);
+});
+
+test('el estado se lee sin importar mayusculas ni espacios', () => {
+  expect(isAutonomousLifeActive('  Disabled ')).toBe(false);
+  expect(isAutonomousLifeActive('INTERACTIVE')).toBe(true);
+});
+
+test('una respuesta vacia o inesperada deja el boton apagado', () => {
+  expect(isAutonomousLifeActive('')).toBe(false);
+  expect(isAutonomousLifeActive('   ')).toBe(false);
+  expect(isAutonomousLifeActive(undefined)).toBe(false);
+  expect(isAutonomousLifeActive(null)).toBe(false);
+  expect(isAutonomousLifeActive(0)).toBe(false);
+});
+
+test('el boton puede alternar en los dos sentidos', () => {
+  // El fallo original hacia que la interfaz siempre creyera estar en ON, y por
+  // eso solo llegaba a pedir "apaga". Con la traduccion, negar el estado da la
+  // peticion correcta en ambos sentidos.
+  expect(!isAutonomousLifeActive('disabled')).toBe(true);
+  expect(!isAutonomousLifeActive('interactive')).toBe(false);
 });

@@ -73,6 +73,33 @@ export const joystickToArm = (joyX, joyY) => ({
   pitch: joyY === 0 ? 0 : -joyY
 });
 
+/** Estados de ALAutonomousLife en los que la vida autonoma no esta activa. */
+const AUTONOMOUS_OFF_STATES = ['disabled', 'unknown'];
+
+/**
+ * Traduce a un si/no el estado de vida autonoma que informa el robot.
+ *
+ * ALAutonomousLife.getState() no responde si o no: devuelve el nombre del modo
+ * en que esta, una palabra entre "solitary", "interactive", "safeguard" y
+ * "disabled". El control server la reenvia tal cual, y solo su rama de error
+ * manda un false, asi que aqui se aceptan las dos formas.
+ *
+ * Sin esta traduccion cualquier palabra cuenta como verdadera, incluida
+ * "disabled", y el boton de la interfaz no puede mostrar OFF jamas.
+ *
+ * @param {string|boolean} state Estado recibido del robot.
+ * @returns {boolean} true si la vida autonoma esta activa.
+ */
+export const isAutonomousLifeActive = (state) => {
+  if (typeof state === 'boolean') return state;
+  if (typeof state !== 'string') return false;
+
+  const normalized = state.trim().toLowerCase();
+  if (!normalized) return false;
+
+  return !AUTONOMOUS_OFF_STATES.includes(normalized);
+};
+
 const NaoController = () => {
   const [currentMode, setCurrentMode] = useState('walk');
   const [activeMenu, setActiveMenu] = useState(null);
@@ -113,8 +140,11 @@ const NaoController = () => {
       
       // Procesar estado de Autonomous Life
       if (lastMessage.autonomousLifeEnabled !== undefined) {
-        setAutonomousEnabled(lastMessage.autonomousLifeEnabled);
-        console.log('[AUTONOMOUS] Estado actualizado:', lastMessage.autonomousLifeEnabled ? 'ON' : 'OFF');
+        // El robot informa el nombre del modo, no un si/no: hay que traducirlo
+        const active = isAutonomousLifeActive(lastMessage.autonomousLifeEnabled);
+        setAutonomousEnabled(active);
+        console.log('[AUTONOMOUS] Estado actualizado:',
+                   lastMessage.autonomousLifeEnabled, '→', active ? 'ON' : 'OFF');
       }
     }
   }, [lastMessage]);
