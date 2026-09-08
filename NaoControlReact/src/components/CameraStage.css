@@ -1,0 +1,108 @@
+/* ─── Visor de cámara central ─── */
+.camera-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  padding: clamp(0.4rem, 1.2vw, 0.9rem);
+  box-sizing: border-box;
+}
+
+.camera-frame {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0a0b0c;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── Sin señal ─── */
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  color: var(--text-faint);
+  background: radial-gradient(circle at 50% 45%, #1b1e22 0%, #0a0b0c 72%);
+}
+
+.camera-placeholder p {
+  margin: 0;
+  font-size: clamp(11px, 1.6vw, 13px);
+}
+
+/* ─── Esquinas ─── */
+.camera-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+.camera-corner.tl { top: 10px; left: 10px;  border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+.camera-corner.tr { top: 10px; right: 10px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+.camera-corner.bl { bottom: 10px; left: 10px;  border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+.camera-corner.br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+/* ─── Indicadores sobre la imagen ─── */
+.camera-badge,
+.camera-tag,
+.camera-footer {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1.3vw, 11px);
+  letter-spacing: 0.09em;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  pointer-events: none;
+}
+
+.camera-badge { top: 14px; left: 14px; color: var(--text); }
+.camera-tag   { top: 14px; right: 14px; color: var(--text-faint); }
+
+.camera-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.camera-badge.is-live .camera-badge-dot { background: var(--accent); }
+.camera-badge.is-down .camera-badge-dot { background: var(--text-faint); }
+.camera-badge.is-down { color: var(--text-faint); }
+
+.camera-footer {
+  bottom: 14px;
+  left: 14px;
+  color: var(--text-dim);
+}
+
+.camera-footer-key { color: var(--text-faint); }
+
+/* ─── Pantallas pequeñas ─── */
+@media (max-width: 620px) {
+  .camera-tag { display: none; }
+  .camera-corner { width: 16px; height: 16px; }
+}

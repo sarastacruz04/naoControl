@@ -25,17 +25,18 @@
   filter: brightness(1.1);
 }
 /* ─── Control Buttons ─── */
-.center{ 
-  display: flex; 
-  flex-direction: column; 
+.center{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(0.3rem, 1vw, 0.5rem);
   width: 100%;
 }
 
 .small-btn{
-  background: var(--light-gray); 
-  color: #222; 
-  border: none; 
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+
   border-radius: .3rem;
   padding: clamp(0.3rem, 1vw, 0.4rem) clamp(0.6rem, 1.5vw, 0.8rem); 
   font-size: clamp(0.7rem, 1.8vw, 0.9rem); 
@@ -56,14 +57,16 @@
 
 /* ─── Autonomous Button ─── */
 .autonomous-btn {
-  background: #FF6B6B;
-  color: white;
-  font-weight: bold;
+  grid-column: 1 / -1;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .autonomous-btn.active {
-  background: #4CAF50;
-  color: white;
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok-text);
 }
 
 .autonomous-btn:hover {

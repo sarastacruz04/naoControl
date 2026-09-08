@@ -2,10 +2,9 @@
 .side-panel {
   display: flex;
   z-index: 200;
-  border: 6px solid var(--light-gray);
-  border-radius: .5rem;
-  background: var(--dark-gray);
-  height: calc(100vh - 1rem);
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  height: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -14,7 +13,7 @@
 .side-panel-nav {
   width: 60px;
   background: transparent;
-  border-right: 3px solid var(--light-gray);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,10 +25,10 @@
 .side-nav-btn {
   width: 44px;
   height: 44px;
-  background: #222;
-  color: #FFFFFF;
+  background: var(--surface-2);
+  color: var(--text);
   font-size: 1.4rem;
-  border: 2px solid #444;
+  border: 1px solid var(--border);
   border-radius: 0.3rem;
   cursor: pointer;
   display: flex;
@@ -40,10 +39,8 @@
 }
 
 .side-nav-btn:hover {
-  background: #333;
-  border-color: #FFFFFF;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
-  transform: scale(1.08);
+  background: var(--surface-3);
+  border-color: var(--surface-3);
 }
 
 .side-nav-btn:active {
@@ -51,16 +48,16 @@
 }
 
 .side-nav-btn.active {
-  background: #000000;
-  color: #000000;
-  border-color: #FFFFFF;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.6);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 /* ─── Content Panel ─── */
 .side-panel-content {
-  width: 300px;
-  background: #1a1a1a;
+  width: clamp(210px, 22vw, 280px);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;

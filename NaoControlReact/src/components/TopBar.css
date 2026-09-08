@@ -1,0 +1,115 @@
+/* ─── Barra superior ─── */
+.topbar {
+  flex-shrink: 0;
+  height: clamp(46px, 7vh, 56px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 clamp(0.6rem, 2vw, 1.15rem);
+  box-sizing: border-box;
+}
+
+/* ─── Identidad ─── */
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 2.4vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.topbar-team {
+  font-size: clamp(9px, 1.3vw, 11px);
+  color: var(--text-faint);
+  border-left: 1px solid var(--border);
+  padding-left: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Telemetría ─── */
+.topbar-telemetry {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 1.15rem);
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.4vw, 12px);
+  flex-shrink: 0;
+}
+
+.tele {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.tele-label {
+  color: var(--text-faint);
+  letter-spacing: 0.13em;
+  font-size: 0.85em;
+}
+
+.tele-value {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Conexión */
+.tele-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tele-conn.is-online .tele-dot { background: var(--ok); }
+.tele-conn.is-online { color: var(--ok-text); }
+
+.tele-conn.is-offline .tele-dot { background: var(--danger); }
+.tele-conn.is-offline { color: var(--danger); }
+
+/* Batería */
+.tele-gauge {
+  width: 30px;
+  height: 11px;
+  border: 1.5px solid var(--text-faint);
+  border-radius: 2px;
+  padding: 1.5px;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.tele-gauge-fill {
+  border-radius: 1px;
+  transition: width 0.4s ease;
+}
+
+/* ─── Pantallas pequeñas: se abrevia lo prescindible ─── */
+@media (max-width: 700px) {
+  .topbar-team { display: none; }
+}
+
+@media (max-width: 520px) {
+  .tele-ip { display: none; }
+  .tele-conn span:not(.tele-dot) { display: none; }
+}

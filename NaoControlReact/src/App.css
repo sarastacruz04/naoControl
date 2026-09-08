@@ -1,17 +1,9 @@
-:root {
-  --dark-gray: #3d3d3d;
-  --light-gray: #bfbfbf;
-  --shadow: rgba(0,0,0,.45);
-  --joy-base: #222;
-  --joy-knob: #cf2626;
-  --menu-bg: rgba(0,0,0,0.8);
-  --btn-size: clamp(2rem,10vw,3rem);
-}
+/* La paleta vive en index.css: no se duplica aquí para que no se desincronicen. */
 
 /* Reset & layout */
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
 html{font-size:clamp(14px,3vw,18px); height: 100%; overflow: hidden; }
-body{ background:#111; color:#fff; height: 100%; display: flex;
+body{ background:var(--bg); color:var(--text); height: 100%; display: flex;
   flex-direction: column; align-items: center; overflow: hidden; }
 
 .App {

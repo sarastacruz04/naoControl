@@ -165,3 +165,53 @@
     padding: 0.5rem;
   }
 }
+
+/* ═══ Panel de información de la cámara ═══ */
+.camera-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem 1rem;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.camera-facts dt {
+  color: var(--text-faint);
+}
+
+.camera-facts dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.camera-state {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  font-family: var(--font-ui) !important;
+}
+
+.camera-state-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.camera-state.is-ok   { color: var(--ok-text); }
+.camera-state.is-ok   .camera-state-dot { background: var(--ok); }
+.camera-state.is-down { color: var(--danger); }
+.camera-state.is-down .camera-state-dot { background: var(--danger); }
+.camera-state.is-wait { color: var(--text-muted); }
+.camera-state.is-wait .camera-state-dot { background: var(--text-muted); }
+
+.camera-note {
+  margin: 0.9rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}

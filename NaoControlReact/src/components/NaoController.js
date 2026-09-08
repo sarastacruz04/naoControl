@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaCircle, FaBatteryFull, FaBatteryHalf, FaBatteryQuarter, FaBatteryEmpty, FaFutbol, FaGrinStars } from 'react-icons/fa';
+import { FaFutbol, FaGrinStars } from 'react-icons/fa';
 import useWebSocket from '../hooks/useWebSocket';
 import { naoHost } from '../services/naoHost';
 import ModePanel from './ModePanel';
 import ControlButtons from './ControlButtons';
 import Joystick from './Joystick';
 import SidePanel from './SidePanel';
+import TopBar from './TopBar';
+import CameraStage from './CameraStage';
 import OrientationMessage from './OrientationMessage';
 import './NaoController.css';
 
@@ -455,35 +457,17 @@ const NaoController = () => {
     };
   }, []);
 
-  // Función para obtener el icono de batería según el estado
-  const getBatteryIcon = useCallback(() => {
-    const { battery, batteryLow, batteryFull } = robotStats;
-    
-    if (batteryFull) {
-      return <FaBatteryFull color="#4CAF50" size={16} />; // Batería llena (95%+)
-    } else if (batteryLow) {
-      return <FaBatteryEmpty color="#FF5722" size={16} />; // Batería baja (<20%)
-    } else if (battery >= 60) {
-      return <FaBatteryFull color="#4CAF50" size={16} />; // Batería alta (60%+)
-    } else if (battery >= 40) {
-      return <FaBatteryHalf color="#FFC107" size={16} />; // Batería media (40-59%)
-    } else if (battery >= 20) {
-      return <FaBatteryQuarter color="#FF9800" size={16} />; // Batería media-baja (20-39%)
-    } else {
-      return <FaBatteryEmpty color="#FF5722" size={16} />; // Batería muy baja (<20%)
-    }
-  }, [robotStats]);
-
-  // Función para obtener el color de la batería
+  // Color de la batería según el estado que informa el robot.
+  // El indicador visual lo dibuja TopBar; aquí solo se decide el color.
   const getBatteryColor = useCallback(() => {
     const { batteryLow, batteryFull } = robotStats;
-    
+
     if (batteryFull) {
-      return '#4CAF50'; // Verde para llena
+      return 'var(--ok)';      // Llena
     } else if (batteryLow) {
-      return '#FF5722'; // Rojo para baja
+      return 'var(--danger)';  // Baja
     } else {
-      return '#FFC107'; // Amarillo para normal
+      return 'var(--warn)';    // Normal
     }
   }, [robotStats]);
 
@@ -491,77 +475,69 @@ const NaoController = () => {
     <div className="nao-controller">
       {/* Orientation Message */}
       <OrientationMessage />
-      
-      {/* Side Panel */}
-      <SidePanel
-        activeMenu={activeMenu}
-        onMenuSelect={handleMenuSelect}
-        onSendVoice={handleSendVoice}
-        onSetLed={handleSetLed}
-        onLedOff={handleLedOff}
-        onLanguageChange={handleLanguageChange}
-        onVolumeChange={handleVolumeChange}
-        onUIChange={handleUIChange}
-        onEmote={handleEmote}
-        currentUI={currentUI}
+
+      {/* Barra superior: identidad y telemetría */}
+      <TopBar
+        isConnected={isConnected}
+        hostIP={hostIP}
+        battery={robotStats.battery}
+        batteryColor={getBatteryColor()}
       />
 
-      {/* Main Content */}
-      <div className="main-content">
-        <main className={`nes-pad ${currentUI === 'normal' ? 'ui-normal' : 'ui-futbol'}`}>
-          {/* Status Info */}
-          <div className="control-status">
-            <div className="status-ip">
-              IP: {hostIP || 'N/A'}
-            </div>
-            <div className="status-connection">
-              <FaCircle color={isConnected ? '#4CAF50' : '#FF5722'} size={14} />
-              <span style={{ marginLeft: '0.5rem' }}>
-                {isConnected ? 'Conectado' : 'Desconectado'}
-              </span>
-            </div>
-            <div className="status-battery" style={{ color: getBatteryColor() }}>
-              {getBatteryIcon()}
-              <span style={{ marginLeft: '0.5rem' }}>{robotStats.battery || 'N/A'}%</span>
-            </div>
-          </div>
+      <div className="app-body">
+        {/* Side Panel */}
+        <SidePanel
+          activeMenu={activeMenu}
+          onMenuSelect={handleMenuSelect}
+          onSendVoice={handleSendVoice}
+          onSetLed={handleSetLed}
+          onLedOff={handleLedOff}
+          onLanguageChange={handleLanguageChange}
+          onVolumeChange={handleVolumeChange}
+          onUIChange={handleUIChange}
+          onEmote={handleEmote}
+          currentUI={currentUI}
+        />
 
-          {/* UI Condicional según el modo */}
-          {currentUI === 'normal' ? (
-            // UI NORMAL - Sin botón kick, con selectores completos
-            <>
-              {/* Selectors Section */}
-              <div className="selectors-section-full">
-                <ModePanel 
-                  currentMode={currentMode} 
-                  onModeChange={handleModeChange} 
+        {/* UI Condicional según el modo */}
+        {currentUI === 'normal' ? (
+          // UI NORMAL - Cámara al centro y controles agrupados a la derecha
+          <>
+            <CameraStage currentMode={currentMode} />
+
+            <aside className="control-dock">
+              <div className="dock-group">
+                <span className="dock-label">Modo</span>
+                <ModePanel
+                  currentMode={currentMode}
+                  onModeChange={handleModeChange}
                 />
               </div>
 
-              {/* Center Controls */}
-              <div className="center-controls-full">
-                <ControlButtons 
-                  onStand={handleStand} 
+              <div className="dock-group">
+                <ControlButtons
+                  onStand={handleStand}
                   onSit={handleSit}
                   onAutonomous={handleAutonomous}
                   autonomousEnabled={autonomousEnabled}
                 />
               </div>
-              
-              {/* Right Joystick */}
-              <div className="joystick-section-full">
-                <Joystick 
-                  onMove={handleJoystickMove} 
+
+              <div className="dock-joystick">
+                <Joystick
+                  onMove={handleJoystickMove}
                   mode={currentMode}
                   uiMode={currentUI}
                   onTurnLeft={handleTurnLeft}
                   onTurnRight={handleTurnRight}
                 />
               </div>
-            </>
-          ) : (
-            // UI FÚTBOL - 3 columnas: KICK | BOTONES CENTRALES | JOYSTICK
-            <>
+            </aside>
+          </>
+        ) : (
+          // UI FÚTBOL - se conserva la maquetación anterior sin cambios
+          <div className="main-content">
+            <main className="nes-pad ui-futbol">
               {/* Left Kick Button */}
               <div className="kick-section">
                 <button
@@ -603,9 +579,9 @@ const NaoController = () => {
                   onTurnRight={handleTurnRight}
                 />
               </div>
-            </>
-          )}
-        </main>
+            </main>
+          </div>
+        )}
       </div>
     </div>
   );
