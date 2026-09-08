@@ -58,15 +58,8 @@
   gap: clamp(0.5rem, 1.5vw, 1.5rem);
 }
 
-/* UI Normal - 3 columnas sin kick */
-.nes-pad.ui-normal {
-  grid-template-columns: clamp(120px, 20vw, 200px) clamp(80px, 12vw, 120px) 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas: 
-    "status status status"
-    "selectors center joystick";
-  gap: clamp(0.5rem, 1.5vw, 1.5rem);
-}/* ─── Status Info en las esquinas ─── */
+/* El modo normal ya no usa esta rejilla: su maquetación es
+   rail + visor + columna de controles, definida más abajo. *//* ─── Status Info en las esquinas ─── */
 .control-status {
   grid-area: status;
   display: flex;
@@ -262,157 +255,145 @@
   color: #2196F3;
 }
 
-/* ─── Responsive Design ─── */
-/* Tablets y pantallas medianas */
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ───────────────────────────────────────────────────────────────
+   La aplicación se usa en horizontal. El presupuesto horizontal es:
+   rail fijo + menú contextual + visor de cámara + columna de controles.
+   Cuando falta ancho, lo primero que se sacrifica es el menú contextual
+   (pasa a superponerse) para que el visor no se quede sin espacio.
+   La altura es el límite real en móviles apaisados, así que ahí se
+   compacta la columna de controles.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Ancho medio: el menú contextual se superpone al visor ── */
+@media (max-width: 1000px) {
+  .side-panel {
+    position: relative;
+  }
+
+  .side-panel-content {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    bottom: 0;
+    z-index: 150;
+    box-shadow: 0.5rem 0 1.5rem rgba(0, 0, 0, 0.55);
+  }
+
+  .control-dock {
+    width: clamp(200px, 30vw, 260px);
+    padding: 0.6rem;
+    gap: 0.6rem;
+  }
+}
+
+/* ── Ancho escaso: el visor manda, los controles a su mínimo ── */
+@media (max-width: 720px) {
+  .control-dock {
+    width: 190px;
+    padding: 0.45rem;
+    gap: 0.5rem;
+  }
+
+  .camera-stage {
+    padding: 0.3rem;
+  }
+
+  .dock-label {
+    font-size: 11px;
+  }
+}
+
+/* ── Apaisado bajo: la altura es el límite, no el ancho ── */
+@media (orientation: landscape) and (max-height: 560px) {
+  .dock-joystick {
+    min-height: 130px;
+  }
+
+  .control-dock {
+    gap: 0.45rem;
+    padding: 0.45rem;
+  }
+
+  .dock-group {
+    gap: 0.35rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 420px) {
+  .dock-joystick {
+    min-height: 100px;
+  }
+}
+
+/* ── Vertical: solo en tablets, los móviles ven el aviso de girar ──
+   Se apila: el visor arriba y los controles debajo en una franja. */
+@media (orientation: portrait) {
+  .control-dock {
+    width: auto;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .app-body {
+    flex-wrap: wrap;
+  }
+
+  .side-panel {
+    order: 1;
+  }
+
+  .camera-stage {
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 45vh;
+  }
+
+  .control-dock {
+    order: 3;
+    flex: 1 1 100%;
+    min-height: 0;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+
+  .control-dock .dock-group {
+    flex: 1 1 0;
+    min-width: 130px;
+    justify-content: center;
+  }
+
+  .control-dock .dock-joystick {
+    flex: 0 0 auto;
+    width: clamp(150px, 30vw, 240px);
+    min-height: 150px;
+  }
+}
+
+/* ── Modo fútbol: conserva su rejilla, solo se ajustan las columnas ── */
 @media (max-width: 1024px) {
-  .nao-controller {
-    padding: clamp(0.125rem, 0.5vw, 0.25rem);
-    gap: clamp(0.125rem, 0.5vw, 0.25rem);
-  }
-  
   .nes-pad {
-    height: calc(100vh - 0.5rem);
-    padding: clamp(0.8rem, 1.8vw, 1.2rem) clamp(0.25rem, 0.8vw, 0.4rem);
-    border-width: 4px;
+    padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.25rem, 0.8vw, 0.4rem);
   }
-  
+
   .nes-pad.ui-futbol {
     grid-template-columns: clamp(80px, 14vw, 130px) clamp(60px, 10vw, 90px) 1fr;
   }
-  
-  .nes-pad.ui-normal {
-    grid-template-columns: clamp(100px, 18vw, 160px) clamp(60px, 10vw, 90px) 1fr;
-  }
 }
 
-/* Pantallas pequeñas */
-@media (max-width: 768px) {
-  .nao-controller {
-    padding: clamp(0.06rem, 0.3vw, 0.125rem);
-    gap: clamp(0.06rem, 0.3vw, 0.125rem);
-  }
-  
+@media (max-width: 720px) {
   .nes-pad {
-    height: calc(100vh - 0.25rem);
-    padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.25rem, 0.8vw, 0.5rem);
-    gap: clamp(0.3rem, 1vw, 0.5rem);
-    border-width: 3px;
+    padding: 0.4rem;
+    gap: 0.4rem;
   }
-  
+
   .nes-pad.ui-futbol {
-    grid-template-columns: clamp(80px, 16vw, 140px) clamp(70px, 11vw, 100px) 1fr;
-  }
-  
-  .nes-pad.ui-normal {
-    grid-template-columns: clamp(100px, 20vw, 180px) clamp(70px, 11vw, 100px) 1fr;
-  }
-  
-  .side-panel {
-    height: calc(100vh - 0.25rem);
-  }
-  
-  .side-panel-content {
-    width: 250px;
+    grid-template-columns: clamp(64px, 13vw, 100px) clamp(52px, 10vw, 80px) 1fr;
   }
 }
 
-/* Mobile */
-@media (max-width: 480px) {
-  .nao-controller {
-    padding: 0;
-    gap: 0;
-  }
-  
-  .nes-pad {
-    height: 100vh;
-    padding: clamp(0.25rem, 1vw, 0.5rem);
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    border-radius: 0;
-    border-width: 2px;
-    gap: clamp(0.2rem, 0.8vw, 0.3rem);
-  }
-  
-  .nes-pad.ui-futbol {
-    grid-template-columns: clamp(60px, 14vw, 100px) clamp(50px, 10vw, 80px) 1fr;
-  }
-  
-  .nes-pad.ui-normal {
-    grid-template-columns: clamp(80px, 18vw, 120px) clamp(50px, 10vw, 80px) 1fr;
-  }
-  
-  .side-panel {
-    height: 100vh;
-  }
-  
-  .side-panel-nav {
-    width: 50px;
-    padding: 0.5rem 0;
-  }
-  
-  .side-nav-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
-  }
-  
-  .side-panel-content {
-    width: 200px;
-  }
-}
-
-/* Pantallas muy pequeñas */
-@media (max-width: 320px) {
-  .nes-pad {
-    padding: 0.25rem;
-    gap: 0.25rem;
-  }
-  
-  .side-panel-nav {
-    width: 40px;
-  }
-  
-  .side-nav-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
-  }
-  
-  .side-panel-content {
-    width: 180px;
-  }
-}
-
-/* Pantallas muy altas (portrait mode) */
-@media (orientation: portrait) {
-  .nao-controller {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .nes-pad {
-    height: calc(70vh);
-    width: calc(100vw - 0.5rem);
-  }
-  
-  .side-panel {
-    width: calc(100vw - 0.5rem);
-    height: calc(30vh - 0.25rem);
-    flex-direction: row;
-  }
-  
-  .side-panel-nav {
-    width: auto;
-    height: 100%;
-    flex-direction: row;
-    padding: 0 0.5rem;
-  }
-  
-  .side-panel-content {
-    width: auto;
-    height: 100%;
-    flex: 1;
-  }
-}
 
 /* ═══════════════════════════════════════════════════════════════
    Columna de controles (modo normal)
